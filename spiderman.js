@@ -10,12 +10,13 @@
  * @returns {Spiderman.Node} A {@link Spiderman.Node} representing the root of
  *     the AST.
  *
- * @example
+ * @exampleHelpers
  * var fs      = require('fs'),
  *     esprima = require('esprima');
  *     js      = fs.readFileSync('example/example.js', 'utf8'),
  *     ast     = esprima.parse(js);
  *
+ * @example
  * Spiderman(ast); // instanceof Spiderman.Node
  */
 function Spiderman(ast) {
@@ -43,23 +44,16 @@ Spiderman.Node = function Node(node) {
  *     descendents.
  *
  * @example
- * var fs      = require('fs'),
- *     esprima = require('esprima');
- *     js      = fs.readFileSync('example/example.js', 'utf8'),
- *     ast     = esprima.parse(js);
- *
- * var spiderman = Spiderman(ast);
- *
- * spiderman.descendents()
+ * Spiderman(ast).descendents()
  *   .map(function(n) { return n.type; })
  *   .slice(0, 6);
  * // => [
  *   'VariableDeclaration',
- *     'VariableDeclarator',
- *       'ObjectExpression',
- *         'Property',
- *         'Identifier',
- *         'Literal',
+ *   'VariableDeclarator',
+ *   'ObjectExpression',
+ *   'Property',
+ *   'Identifier',
+ *   'Literal',
  * ]
  */
 Spiderman.Node.prototype.descendents = function descendents() {
@@ -99,14 +93,8 @@ Spiderman.Node.prototype.children = function children() {
  * @returns {Array.<Node>} An array containing this node's direct children.
  *
  * @example
- * var fs      = require('fs'),
- *     esprima = require('esprima');
- *     js      = fs.readFileSync('example/example.js', 'utf8'),
- *     ast     = esprima.parse(js);
- *
- * var spiderman = Spiderman(ast);
- *
- * spiderman._children().map(function(n) { return n.type; }) // => [
+ * Spiderman(ast)._children().map(function(n) { return n.type; });
+ * // => [
  *   'VariableDeclaration',
  *   'ForStatement',
  *   'FunctionDeclaration',
