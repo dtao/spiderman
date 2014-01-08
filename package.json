@@ -1,0 +1,12 @@
+{
+  "name": "spiderman",
+  "description": "Super powers for the SpiderMonkey Parser API",
+  "version": "0.1.0",
+  "devDependencies": {
+    "autodoc": ">= 0.5.4",
+    "esprima": ">= 1.0.0"
+  },
+  "scripts": {
+    "test": "autodoc -t spiderman.js"
+  }
+}
