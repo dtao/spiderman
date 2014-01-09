@@ -29,11 +29,10 @@ function Spiderman(ast) {
  * @constructor
  * @param {Node} node
  */
-Spiderman.Node = function Node(node) {
-  if (!node) { return; }
-
-  this.node = node;
-  this.type = node.type;
+Spiderman.Node = function Node(node, parent) {
+  this.node   = node;
+  this.type   = node.type;
+  this.parent = parent;
 };
 
 /**
@@ -76,10 +75,12 @@ Spiderman.Node.prototype.descendents = function descendents() {
  *     children, wrapped as {@link Spiderman.Node} objects.
  */
 Spiderman.Node.prototype.children = function children() {
-  this.wrappedChildren || (this.wrappedChildren = this._children().map(function(child) {
-    return new Spiderman.Node(child);
+  var node = this;
+
+  this.cachedChildren || (this.cachedChildren = this._children().map(function(child) {
+    return new Spiderman.Node(child, node);
   }));
-  return this.wrappedChildren;
+  return this.cachedChildren;
 };
 
 /**
@@ -238,9 +239,111 @@ Spiderman.Node.prototype._children = function _children() {
       return [];
 
     default:
-      throw 'Unknown node type: ' + Spiderman.formatNode(node) + '\n\n' +
+      throw 'Unknown node type: ' + formatNode(node) + '\n\n' +
         'Report this to https://github.com/dtao/spiderman/issues';
   }
+};
+
+/**
+ * Gets the scope in which this node is defined.
+ *
+ * @returns {Spiderman.Scope} The scope of this node's parent.
+ */
+Spiderman.Node.prototype.parentScope = function parentScope() {
+  return this.parent.scope();
+};
+
+/**
+ * Gets the scope of this node and caches the result.
+ *
+ * @returns {Spiderman.Scope} The scope of this node.
+ */
+Spiderman.Node.prototype.scope = function scope() {
+  this.cachedScope || (this.cachedScope = this._scope());
+  return this.cachedScope;
+};
+
+/**
+ * Gets the scope of this node.
+ *
+ * @returns {Spiderman.Scope} The scope of this node.
+ *
+ * @example
+ * var program = Spiderman(ast);
+ *
+ * program._scope().node.type               // => 'Program'
+ * program.children()[2]._scope().node.type // => 'FunctionDeclaration'
+ */
+Spiderman.Node.prototype._scope = function _scope() {
+  switch (this.type) {
+    case 'Program':
+    case 'FunctionDeclaration':
+    case 'FunctionExpression':
+      return new Spiderman.Scope(this);
+
+    default:
+      return this.parent.scope();
+  }
+};
+
+/**
+ * Provides a JSON representation of a node.
+ *
+ * @returns {string} A JSON representation of this node.
+ */
+Spiderman.Node.prototype.toJSON = function toJSON() {
+  return JSON.stringify.apply(JSON, [this.node].concat(arguments));
+};
+
+/**
+ * Represents a JavaScript scope.
+ *
+ * @constructor
+ * @param {Spiderman.Node} node
+ */
+Spiderman.Scope = function Scope(node) {
+  this.node = node;
+};
+
+/**
+ * Gets all of the identifiers in a JavaScript scope and caches the result.
+ *
+ * @returns {Array.<string>} An array containing all of the identifiers defined
+ *     within the current scope.
+ *
+ * @example
+ * Spiderman(ast).scope().identifiers(); // => ['foo', 'i', 'f']
+ */
+Spiderman.Scope.prototype.identifiers = function identifiers() {
+  this.cachedIdentifiers || (this.cachedIdentifiers = this._identifiers());
+  return this.cachedIdentifiers;
+};
+
+/**
+ * Gets all of the identifiers in a JavaScript scope.
+ *
+ * @returns {Array.<string>} An array containing all of the identifiers defined
+ *     within the current scope.
+ *
+ * @example
+ * Spiderman(ast).scope()._identifiers(); // => ['foo', 'i', 'f']
+ */
+Spiderman.Scope.prototype._identifiers = function _identifiers() {
+  var scope = this,
+      list  = [];
+
+  this.node.descendents().forEach(function(node) {
+    if (node.parentScope() !== scope) {
+      return;
+    }
+
+    node = node.node;
+    if (node.id && node.id.type === 'Identifier') {
+      list.push(node.id.name);
+    }
+  });
+
+  return list;
 };
 
 /**
@@ -249,7 +352,7 @@ Spiderman.Node.prototype._children = function _children() {
  * @param {Node} node
  * @returns {string}
  */
-Spiderman.formatNode = function formatNode(node) {
+function formatNode(node) {
   var properties = Object.keys(node).map(function(key) {
     var value = node[key];
 
