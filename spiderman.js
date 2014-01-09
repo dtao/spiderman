@@ -57,15 +57,15 @@ Spiderman.Node = function Node(node) {
  * ]
  */
 Spiderman.Node.prototype.descendents = function descendents() {
-  var children    = this.children(),
-      descendents = [];
+  var children = this.children(),
+      list     = arguments.length > 0 ? arguments[0] : [];
 
   for (var i = 0, len = children.length; i < len; ++i) {
-    descendents.push(children[i]);
-    descendents.push.apply(descendents, children[i].descendents());
+    list.push(children[i]);
+    children[i].descendents(list);
   }
 
-  return descendents;
+  return list;
 };
 
 /**
