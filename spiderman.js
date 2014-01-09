@@ -30,10 +30,29 @@ function Spiderman(ast) {
  * @param {Node} node
  */
 Spiderman.Node = function Node(node, parent) {
-  this.node   = node;
-  this.type   = node.type;
-  this.parent = parent;
+  var self = this;
+
+  this.node     = node;
+  this.type     = node.type;
+  this.parent   = parent;
 };
+
+Object.defineProperty(Spiderman.Node.prototype, 'scope', {
+  get: function getScope() {
+    this._cachedScope || (this._cachedScope = this._scope());
+    return this._cachedScope;
+  }
+});
+
+Object.defineProperty(Spiderman.Node.prototype, 'children', {
+  get: function getChildren() {
+    var self = this;
+    this._cachedChildren || (this._cachedChildren = this._children().map(function(child) {
+      return new Spiderman.Node(child, self);
+    }));
+    return this._cachedChildren;
+  }
+});
 
 /**
  * Gets all descendents (children, grandchildren, etc.) of an AST node, each
@@ -56,7 +75,7 @@ Spiderman.Node = function Node(node, parent) {
  * ]
  */
 Spiderman.Node.prototype.descendents = function descendents() {
-  var children = this.children(),
+  var children = this.children,
       list     = arguments.length > 0 ? arguments[0] : [];
 
   for (var i = 0, len = children.length; i < len; ++i) {
@@ -65,22 +84,6 @@ Spiderman.Node.prototype.descendents = function descendents() {
   }
 
   return list;
-};
-
-/**
- * Gets all of the children of an AST node, each wrapped as a
- * {@link Spiderman.Node} object.
- *
- * @returns {Array.<Spiderman.Node>} An array containing this node's direct
- *     children, wrapped as {@link Spiderman.Node} objects.
- */
-Spiderman.Node.prototype.children = function children() {
-  var node = this;
-
-  this.cachedChildren || (this.cachedChildren = this._children().map(function(child) {
-    return new Spiderman.Node(child, node);
-  }));
-  return this.cachedChildren;
 };
 
 /**
@@ -250,21 +253,13 @@ Spiderman.Node.prototype._children = function _children() {
  * @returns {Spiderman.Scope} The scope of this node's parent.
  */
 Spiderman.Node.prototype.parentScope = function parentScope() {
-  return this.parent.scope();
+  return this.parent.scope;
 };
 
 /**
- * Gets the scope of this node and caches the result.
- *
- * @returns {Spiderman.Scope} The scope of this node.
- */
-Spiderman.Node.prototype.scope = function scope() {
-  this.cachedScope || (this.cachedScope = this._scope());
-  return this.cachedScope;
-};
-
-/**
- * Gets the scope of this node.
+ * Gets the scope of this node. For most nodes, this is the same thing as
+ * {@link Spiderman.Node#parentScope}. For functions, this represents the scope
+ * created by the function.
  *
  * @returns {Spiderman.Scope} The scope of this node.
  *
@@ -272,7 +267,7 @@ Spiderman.Node.prototype.scope = function scope() {
  * var program = Spiderman(ast);
  *
  * program._scope().node.type               // => 'Program'
- * program.children()[2]._scope().node.type // => 'FunctionDeclaration'
+ * program.children[2]._scope().node.type // => 'FunctionDeclaration'
  */
 Spiderman.Node.prototype._scope = function _scope() {
   switch (this.type) {
@@ -282,7 +277,7 @@ Spiderman.Node.prototype._scope = function _scope() {
       return new Spiderman.Scope(this);
 
     default:
-      return this.parent.scope();
+      return this.parent.scope;
   }
 };
 
@@ -305,19 +300,12 @@ Spiderman.Scope = function Scope(node) {
   this.node = node;
 };
 
-/**
- * Gets all of the identifiers in a JavaScript scope and caches the result.
- *
- * @returns {Array.<string>} An array containing all of the identifiers defined
- *     within the current scope.
- *
- * @example
- * Spiderman(ast).scope().identifiers(); // => ['foo', 'i', 'f']
- */
-Spiderman.Scope.prototype.identifiers = function identifiers() {
-  this.cachedIdentifiers || (this.cachedIdentifiers = this._identifiers());
-  return this.cachedIdentifiers;
-};
+Object.defineProperty(Spiderman.Scope.prototype, 'identifiers', {
+  get: function getIdentifiers() {
+    this._cachedIdentifiers || (this._cachedIdentifiers = this._identifiers());
+    return this._cachedIdentifiers;
+  }
+});
 
 /**
  * Gets all of the identifiers in a JavaScript scope.
@@ -326,7 +314,7 @@ Spiderman.Scope.prototype.identifiers = function identifiers() {
  *     within the current scope.
  *
  * @example
- * Spiderman(ast).scope()._identifiers(); // => ['foo', 'i', 'f']
+ * Spiderman(ast).scope._identifiers(); // => ['foo', 'i', 'f']
  */
 Spiderman.Scope.prototype._identifiers = function _identifiers() {
   var scope = this,
