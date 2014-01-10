@@ -32,11 +32,9 @@ Spiderman.VERSION = '0.1.0';
  * @param {Node} node
  */
 Spiderman.Node = function Node(node, parent) {
-  var self = this;
-
-  this.node     = node;
-  this.type     = node.type;
-  this.parent   = parent;
+  this.node   = node;
+  this.type   = node.type;
+  this.parent = parent;
 };
 
 Object.defineProperty(Spiderman.Node.prototype, 'scope', {
