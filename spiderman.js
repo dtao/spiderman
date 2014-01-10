@@ -49,7 +49,7 @@ Object.defineProperty(Spiderman.Node.prototype, 'children', {
     var self = this;
     this._cachedChildren || (this._cachedChildren = this._children().map(function(child) {
       if (!child) {
-        throw 'Missing child: ' + Spiderman.formatNode(self);
+        throw 'Missing child: ' + formatNode(self);
       }
 
       return new Spiderman.Node(child, self);
