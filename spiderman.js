@@ -59,6 +59,15 @@ Object.defineProperty(Spiderman.Node.prototype, 'children', {
 });
 
 /**
+ * Gets the raw AST node wrapped by this {@link Spiderman.Node}.
+ *
+ * @returns {Node} The raw AST node.
+ */
+Spiderman.Node.prototype.unwrap = function unwrap() {
+  return this.node;
+};
+
+/**
  * Gets all descendents (children, grandchildren, etc.) of an AST node, each
  * wrapped as a {@link Spiderman.Node} object.
  *
