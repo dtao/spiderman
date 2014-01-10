@@ -184,7 +184,7 @@ Spiderman.Node.prototype._children = function _children() {
       return node.declarations;
 
     case 'VariableDeclarator':
-      return [node.init];
+      return node.init ? [node.init] : [];
 
     case 'ThisExpression':
       return [];
