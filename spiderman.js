@@ -103,7 +103,7 @@ Spiderman.Node.prototype.descendents = function descendents() {
  *   'ForStatement',
  *   'FunctionDeclaration',
  *   'ExpressionStatement',
- *   'ExpressionStatement'
+ *   'TryStatement'
  * ]
  */
 Spiderman.Node.prototype._children = function _children() {
@@ -147,6 +147,9 @@ Spiderman.Node.prototype._children = function _children() {
       return node.argument ? [node.argument] : [];
 
     case 'ThrowStatement':
+      return [node.argument];
+
+    case 'TryStatement':
       return [node.block].concat(
         node.handler ? [node.handler] : []).concat(
         node.finalizer ? [node.finalizer] : []);

@@ -10,4 +10,8 @@ function f() {
 
 f().bar = 'hello';
 
-console.log(foo.bar);
+try {
+  console.log(foo.bar);
+} catch (e) {
+  throw e;
+}
