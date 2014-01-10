@@ -35,12 +35,38 @@ Spiderman.Node = function Node(node, parent) {
   this.node   = node;
   this.type   = node.type;
   this.parent = parent;
+
+  if (this.hasName()) {
+    this.name = node.id.name;
+  }
 };
 
 Object.defineProperty(Spiderman.Node.prototype, 'scope', {
   get: function getScope() {
     this._cachedScope || (this._cachedScope = this._scope());
     return this._cachedScope;
+  }
+});
+
+Object.defineProperty(Spiderman.Node.prototype, 'scopeMap', {
+  get: function getScopeMap() {
+    var self  = this,
+        scope = this.scope;
+
+    this._cachedScopeMap || (this._cachedScopeMap = this.descendents().reduce(function(map, node) {
+      if (node.parentScope() !== scope) {
+        return map;
+      }
+
+      if (node.isFunction()) {
+        map[node.name] = node.scope;
+      }
+
+      return map;
+
+    }, {}));
+
+    return this._cachedScopeMap;
   }
 });
 
@@ -65,6 +91,20 @@ Object.defineProperty(Spiderman.Node.prototype, 'children', {
  */
 Spiderman.Node.prototype.unwrap = function unwrap() {
   return this.node;
+};
+
+/**
+ * Finds a child scope by name.
+ *
+ * @param {string} name The name (function name) of the child scope.
+ * @returns {?Spiderman.Scope} The scope, if found, or else `null`.
+ *
+ * @example
+ * Spiderman(ast).findScope('f'); // instanceof Spiderman.Scope
+ * Spiderman(ast).findScope('g'); // => null
+ */
+Spiderman.Node.prototype.findScope = function findScope(name) {
+  return this.scopeMap[name];
 };
 
 /**
@@ -273,6 +313,34 @@ Spiderman.Node.prototype.parentScope = function parentScope() {
 };
 
 /**
+ * Tests whether this node introduces a new scope or not.
+ *
+ * @returns {boolean} Whether or not this node introduces a new scope.
+ */
+Spiderman.Node.prototype.introducesScope = function introducesScope() {
+  return this.isFunction() || this.type === 'Program';
+};
+
+/**
+ * Tests whether this node represents a function.
+ *
+ * @returns {boolean} Whether or not this node represents a function.
+ */
+Spiderman.Node.prototype.isFunction = function isFunction() {
+  return this.type === 'FunctionDeclaration' || this.type === 'FunctionExpression';
+};
+
+/**
+ * Tests whether this node has a name (i.e., it's a function or a variable).
+ *
+ * @returns {boolean} Whether or not this node has a name.
+ */
+Spiderman.Node.prototype.hasName = function hasName() {
+  var node = this.unwrap();
+  return node.id && node.id.type === 'Identifier';
+};
+
+/**
  * Gets the scope of this node. For most nodes, this is the same thing as
  * {@link Spiderman.Node#parentScope}. For functions, this represents the scope
  * created by the function.
@@ -286,15 +354,7 @@ Spiderman.Node.prototype.parentScope = function parentScope() {
  * program.children[2]._scope().node.type // => 'FunctionDeclaration'
  */
 Spiderman.Node.prototype._scope = function _scope() {
-  switch (this.type) {
-    case 'Program':
-    case 'FunctionDeclaration':
-    case 'FunctionExpression':
-      return new Spiderman.Scope(this);
-
-    default:
-      return this.parent.scope;
-  }
+  return this.introducesScope() ? new Spiderman.Scope(this) : this.parent.scope;
 };
 
 /**
@@ -305,7 +365,7 @@ Spiderman.Node.prototype._scope = function _scope() {
 Spiderman.Node.prototype.toJSON = function toJSON() {
   return JSON.stringify.apply(JSON, [this.node].concat(arguments));
 };
-
+ 
 /**
  * Represents a JavaScript scope.
  *
