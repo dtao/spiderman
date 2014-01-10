@@ -1,6 +1,7 @@
 {
   "name": "spiderman",
   "description": "Super powers for the SpiderMonkey Parser API",
+  "main": "spiderman.js",
   "version": "0.1.0",
   "devDependencies": {
     "autodoc": ">= 0.5.4",
