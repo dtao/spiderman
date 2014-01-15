@@ -121,7 +121,12 @@ Spiderman.Node.prototype.unwrap = function unwrap() {
  *
  * functions[0].inferName(); // => 'foo'
  * functions[1].inferName(); // => 'bar'
- * functions[2].inferName(); // => 'baz'
+ * functions[2].inferName(); // => 'bar.baz'
+ * functions[3].inferName(); // => 'onmessage'
+ * functions[4].inferName(); // => 'Object.prototype.toString'
+ * functions[5].inferName(); // => 'String.prototype.trim'
+ * functions[6].inferName(); // => 'alert'
+ * functions[7].inferName(); // => 'Array.prototype.peek'
  */
 Spiderman.Node.prototype.inferName = function inferName() {
   var node       = this.node,
@@ -141,9 +146,7 @@ Spiderman.Node.prototype.inferName = function inferName() {
           break;
 
         case 'AssignmentExpression':
-          if (node === parentNode.right) {
-            if (parentNode.left.type === 'MemberExpression') { return parentNode.left.property.name; }
-          }
+          if (node === parentNode.right) { return guessExposedName(parentNode.left); }
       }
 
     default:
@@ -161,7 +164,7 @@ Spiderman.Node.prototype.inferName = function inferName() {
  * @example
  * var functions = get('functions').query('Function');
  *
- * functions.length;  // => 4
+ * functions.length;  // => 8
  * functions[0].type; // => 'FunctionDeclaration'
  * functions[1].type; // => 'FunctionExpression'
  */
@@ -510,6 +513,32 @@ function formatNode(node) {
   });
 
   return node.type + ' (' + properties.join(', ') + ')';
-};
+}
+
+/**
+ * Guesses what a node's "exposed" name (i.e., how you would access it from
+ * downstream code) might be. This method is pretty stupid at the moment.
+ * Eventually it should be a lot smarter.
+ *
+ * @param {Node} node
+ * @returns {string}
+ */
+function guessExposedName(node) {
+  switch (node.type) {
+    case 'Identifier':
+      return node.name;
+
+    case 'Literal':
+      return node.value;
+
+    case 'MemberExpression':
+      return node.object.type === 'ThisExpression' ?
+        guessExposedName(node.property) :
+        guessExposedName(node.object) + '.' + guessExposedName(node.property);
+
+    default:
+      throw "Don't know how to stringify a " + node.type + " node!";
+  }
+}
 
 module.exports = Spiderman;
