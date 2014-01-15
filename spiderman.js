@@ -36,7 +36,7 @@ function Spiderman(ast) {
   return new Spiderman.Node(ast);
 }
 
-Spiderman.VERSION = '0.1.3';
+Spiderman.VERSION = '0.1.4';
 
 /**
  * Wraps an AST node conforming to the SpiderMonkey Parser API.
