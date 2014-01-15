@@ -94,6 +94,31 @@ Spiderman.Node.prototype.unwrap = function unwrap() {
 };
 
 /**
+ * Guesses a name for a function:
+ *
+ * - If the function has a name (i.e., isn't an anonymous function expression),
+ *   just uses that.
+ * - If the function is assigned to an identifier (either a variable declaration
+ *   or a member expression), uses that instead.
+ *
+ * @returns {?string} The inferred name, if determined, otherwise `null`.
+ *
+ * @example
+ * Spiderman(ast).children[2].inferName(); // => 'f'
+ */
+Spiderman.Node.prototype.inferName = function inferName() {
+  var node = this.node;
+
+  switch (node.type) {
+    case 'FunctionDeclaration':
+      return node.id.name;
+
+    default:
+      return null;
+  }
+};
+
+/**
  * Finds a child scope by name.
  *
  * @param {string} name The name (function name) of the child scope.
