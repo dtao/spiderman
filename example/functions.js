@@ -8,3 +8,6 @@ var trim = String.prototype.trim = function() {
 };
 this['alert'] = function(message) { console.log(message); };
 Array.prototype['peek'] = function() { return this[this.length - 1]; };
+var outer = {
+  inner: function() {}
+};

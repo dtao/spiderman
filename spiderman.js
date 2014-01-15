@@ -127,6 +127,7 @@ Spiderman.Node.prototype.unwrap = function unwrap() {
  * functions[5].inferName(); // => 'String.prototype.trim'
  * functions[6].inferName(); // => 'alert'
  * functions[7].inferName(); // => 'Array.prototype.peek'
+ * functions[8].inferName(); // => 'outer.inner'
  */
 Spiderman.Node.prototype.inferName = function inferName() {
   var node       = this.node,
@@ -147,6 +148,19 @@ Spiderman.Node.prototype.inferName = function inferName() {
 
         case 'AssignmentExpression':
           if (node === parentNode.right) { return guessExposedName(parentNode.left); }
+          break;
+
+        case 'Property':
+          parent = parent
+            .parent  // ObjectExpression
+            .parent; // ?
+
+          if (parent.type === 'AssignmentExpression') {
+            return guessExposedName(parent.unwrap().left) + '.' + parentNode.key.name;
+          } else if (parent.type === 'VariableDeclarator') {
+            return guessExposedName(parent.unwrap().id) + '.' + parentNode.key.name;
+          }
+          break;
       }
 
     default:
@@ -164,7 +178,7 @@ Spiderman.Node.prototype.inferName = function inferName() {
  * @example
  * var functions = get('functions').query('Function');
  *
- * functions.length;  // => 8
+ * functions.length;  // => 9
  * functions[0].type; // => 'FunctionDeclaration'
  * functions[1].type; // => 'FunctionExpression'
  */
