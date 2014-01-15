@@ -12,12 +12,25 @@
  *
  * @exampleHelpers
  * var fs      = require('fs'),
+ *     path    = require('path'),
  *     esprima = require('esprima');
- *     js      = fs.readFileSync('example/example.js', 'utf8'),
- *     ast     = esprima.parse(js);
+ *     files   = fs.readdirSync('example/');
+ *
+ * var examples = files.reduce(function(map, file) {
+ *   var key = path.basename(file, '.js'),
+ *       js  = fs.readFileSync('example/' + file, 'utf-8'),
+ *       ast = esprima.parse(js);
+ *
+ *   map[key] = Spiderman(ast);
+ *   return map;
+ * }, {});
+ *
+ * function get(name) {
+ *   return examples[name];
+ * }
  *
  * @example
- * Spiderman(ast); // instanceof Spiderman.Node
+ * get('example'); // instanceof Spiderman.Node
  */
 function Spiderman(ast) {
   return new Spiderman.Node(ast);
@@ -104,18 +117,60 @@ Spiderman.Node.prototype.unwrap = function unwrap() {
  * @returns {?string} The inferred name, if determined, otherwise `null`.
  *
  * @example
- * Spiderman(ast).children[2].inferName(); // => 'f'
+ * var functions = get('functions').query('Function');
+ *
+ * functions[0].inferName(); // => 'foo'
+ * functions[1].inferName(); // => 'bar'
+ * functions[2].inferName(); // => 'baz'
  */
 Spiderman.Node.prototype.inferName = function inferName() {
-  var node = this.node;
+  var node       = this.node,
+      parent     = this.parent,
+      parentNode = parent.unwrap();
 
   switch (node.type) {
     case 'FunctionDeclaration':
       return node.id.name;
 
+    case 'FunctionExpression':
+      if (node.id) { return node.id.name; }
+
+      switch (parent.type) {
+        case 'VariableDeclarator':
+          if (node === parentNode.init) { return parentNode.id.name; }
+          break;
+
+        case 'AssignmentExpression':
+          if (node === parentNode.right) {
+            if (parentNode.left.type === 'MemberExpression') { return parentNode.left.property.name; }
+          }
+      }
+
     default:
       return null;
   }
+};
+
+/**
+ * Gets all descendent nodes matching a given selector.
+ *
+ * @param {string} selector Right now, this only supports regex matches against
+ *     node type.
+ * @return {Array.<Spiderman.Node>} All nodes matching the selector.
+ *
+ * @example
+ * var functions = get('functions').query('Function');
+ *
+ * functions.length;  // => 4
+ * functions[0].type; // => 'FunctionDeclaration'
+ * functions[1].type; // => 'FunctionExpression'
+ */
+Spiderman.Node.prototype.query = function query(selector) {
+  var pattern = new RegExp(selector);
+
+  return this.descendents().filter(function(node) {
+    return pattern.test(node.type);
+  });
 };
 
 /**
@@ -125,8 +180,8 @@ Spiderman.Node.prototype.inferName = function inferName() {
  * @returns {?Spiderman.Scope} The scope, if found, or else `null`.
  *
  * @example
- * Spiderman(ast).findScope('f'); // instanceof Spiderman.Scope
- * Spiderman(ast).findScope('g'); // => null
+ * get('example').findScope('f'); // instanceof Spiderman.Scope
+ * get('example').findScope('g'); // => null
  */
 Spiderman.Node.prototype.findScope = function findScope(name) {
   return this.scopeMap[name];
@@ -140,7 +195,7 @@ Spiderman.Node.prototype.findScope = function findScope(name) {
  *     descendents.
  *
  * @example
- * Spiderman(ast).descendents()
+ * get('example').descendents()
  *   .map(function(n) { return n.type; })
  *   .slice(0, 6);
  * // => [
@@ -175,7 +230,7 @@ Spiderman.Node.prototype.descendents = function descendents() {
  * @returns {Array.<Node>} An array containing this node's direct children.
  *
  * @example
- * Spiderman(ast)._children().map(function(n) { return n.type; });
+ * get('example')._children().map(function(n) { return n.type; });
  * // => [
  *   'VariableDeclaration',
  *   'ForStatement',
@@ -373,10 +428,8 @@ Spiderman.Node.prototype.hasName = function hasName() {
  * @returns {Spiderman.Scope} The scope of this node.
  *
  * @example
- * var program = Spiderman(ast);
- *
- * program._scope().node.type               // => 'Program'
- * program.children[2]._scope().node.type // => 'FunctionDeclaration'
+ * get('example')._scope().node.type             // => 'Program'
+ * get('example').children[2]._scope().node.type // => 'FunctionDeclaration'
  */
 Spiderman.Node.prototype._scope = function _scope() {
   return this.introducesScope() ? new Spiderman.Scope(this) : this.parent.scope;
@@ -415,7 +468,7 @@ Object.defineProperty(Spiderman.Scope.prototype, 'identifiers', {
  *     within the current scope.
  *
  * @example
- * Spiderman(ast).scope._identifiers(); // => ['foo', 'i', 'f']
+ * get('example').scope._identifiers(); // => ['foo', 'i', 'f']
  */
 Spiderman.Scope.prototype._identifiers = function _identifiers() {
   var scope = this,
