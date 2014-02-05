@@ -38,9 +38,34 @@ function Spiderman(ast) {
 
 Spiderman.VERSION = '0.1.4';
 
-// Declare this variable where it will be visible throughout the file;
-// but only assign it if/when necessary (from calling #toString).
-var codegen;
+// Declare these variables where they will be visible throughout the file;
+// but only assign them if/when necessary (from calling #toString).
+var esprima, codegen;
+
+/**
+ * Parses a single JavaScript expression.
+ *
+ * @example
+ * Spiderman.parseExpression('var foo = "foo";'); // => {
+ *   type: 'VariableDeclaration',
+ *   declarations: [
+ *     {
+ *       type: 'VariableDeclarator',
+ *       id: { type: 'Identifier', name: 'foo' },
+ *       init: { type: 'Literal', value: 'foo' }
+ *     }
+ *   ],
+ *   kind: 'var'
+ * }
+ */
+Spiderman.parseExpression = function parseExpression(expression) {
+  if (!esprima) {
+    esprima = require('esprima');
+  }
+
+  var ast = esprima.parse(expression);
+  return ast.body[0];
+};
 
 /**
  * Wraps an AST node conforming to the SpiderMonkey Parser API.
