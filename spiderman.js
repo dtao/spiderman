@@ -101,7 +101,7 @@ Spiderman.Node.prototype.toString = function toString() {
     codegen = require('escodegen');
   }
 
-  return codegen.generate(this.node);
+  return codegen.generate(this.unwrap());
 };
 
 /**
