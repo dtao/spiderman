@@ -158,6 +158,16 @@ Object.defineProperty(Spiderman.Node.prototype, 'children', {
 });
 
 /**
+ * Invalidates any cached data (such as children).
+ */
+Spiderman.Node.prototype.dirty = function dirty() {
+  this._cachedScope = null;
+  this._cachedScopeMap = null;
+  this._cachedChildren = null;
+  this._cachedIdentifiers = null;
+};
+
+/**
  * Gets the raw AST node wrapped by this {@link Spiderman.Node}.
  *
  * @returns {Node} The raw AST node.
@@ -248,6 +258,38 @@ Spiderman.Node.prototype.query = function query(selector) {
   return this.descendents().filter(function(node) {
     return pattern.test(node.type);
   });
+};
+
+/**
+ * Appends the current node to another.
+ *
+ * @example
+ * var simpleProgram = get('single');
+ * var newDeclaration = Spiderman.parseExpression('var bar = "bar";');
+ *
+ * newDeclaration.appendTo(simpleProgram);
+ * simpleProgram.toString(); // => [
+ *   "var foo = 'foo';",
+ *   "var bar = 'bar';"
+ * ].join('\n')
+ */
+Spiderman.Node.prototype.appendTo = function appendTo(other) {
+  switch (other.type) {
+    case 'Program':
+    case 'BlockStatement':
+      other.unwrap().body.push(this.unwrap());
+      other.dirty();
+      break;
+
+    case 'FunctionDeclaration':
+    case 'FunctionExpression':
+      other.unwrap().body.body.push(this.unwrap());
+      other.dirty();
+      break;
+
+    default:
+      throw 'You cannot append to a "' + other.type + '" node!';
+  }
 };
 
 /**
