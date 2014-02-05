@@ -573,6 +573,9 @@ Spiderman.Scope = function Scope(node) {
   this.node = node;
 };
 
+/**
+ * Gets the identifiers defined in the current scope.
+ */
 Object.defineProperty(Spiderman.Scope.prototype, 'identifiers', {
   get: function getIdentifiers() {
     this._cachedIdentifiers || (this._cachedIdentifiers = this._identifiers());
