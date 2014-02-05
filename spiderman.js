@@ -38,6 +38,10 @@ function Spiderman(ast) {
 
 Spiderman.VERSION = '0.1.4';
 
+// Declare this variable where it will be visible throughout the file;
+// but only assign it if/when necessary (from calling #toString).
+var codegen;
+
 /**
  * Wraps an AST node conforming to the SpiderMonkey Parser API.
  *
@@ -52,6 +56,27 @@ Spiderman.Node = function Node(node, parent) {
   if (this.hasName()) {
     this.name = node.id.name;
   }
+};
+
+/**
+ * Produces raw JavaScript code for an AST node.
+ *
+ * @example
+ * var example = get('example'),
+ *     fooDecl = example.children[0],
+ *     fooAssn = fooDecl.children[0],
+ *     objExpr = fooAssn.children[0];
+ *
+ * fooDecl.toString(); // => 'var foo = { bar: null };'
+ * fooAssn.toString(); // => 'foo = { bar: null }'
+ * objExpr.toString(); // => '{ bar: null }'
+ */
+Spiderman.Node.prototype.toString = function toString() {
+  if (!codegen) {
+    codegen = require('escodegen');
+  }
+
+  return codegen.generate(this.node);
 };
 
 /**

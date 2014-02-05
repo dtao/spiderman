@@ -3,6 +3,9 @@
   "description": "Super powers for the SpiderMonkey Parser API",
   "main": "spiderman.js",
   "version": "0.1.4",
+  "dependencies": {
+    "escodegen": "*"
+  },
   "devDependencies": {
     "autodoc": ">= 0.5.4",
     "esprima": ">= 1.0.0"
