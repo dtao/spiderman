@@ -54,6 +54,10 @@ Spiderman.Node = function Node(node, parent) {
   }
 };
 
+/**
+ * Gets the scope defined by this node, if it exists, or else the scope this
+ * node belongs to.
+ */
 Object.defineProperty(Spiderman.Node.prototype, 'scope', {
   get: function getScope() {
     this._cachedScope || (this._cachedScope = this._scope());
@@ -61,6 +65,9 @@ Object.defineProperty(Spiderman.Node.prototype, 'scope', {
   }
 });
 
+/**
+ * Provides a map of names (of functions) to scopes.
+ */
 Object.defineProperty(Spiderman.Node.prototype, 'scopeMap', {
   get: function getScopeMap() {
     var self  = this,
@@ -83,6 +90,9 @@ Object.defineProperty(Spiderman.Node.prototype, 'scopeMap', {
   }
 });
 
+/**
+ * Gets the direct children of this node.
+ */
 Object.defineProperty(Spiderman.Node.prototype, 'children', {
   get: function getChildren() {
     var self = this;
