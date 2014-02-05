@@ -43,10 +43,10 @@ Spiderman.VERSION = '0.1.4';
 var esprima, codegen;
 
 /**
- * Parses a single JavaScript expression.
+ * Parses a single JavaScript expression as a {@link Spiderman.Node}.
  *
  * @example
- * Spiderman.parseExpression('var foo = "foo";'); // => {
+ * Spiderman.parseExpression('var foo = "foo";').unwrap(); // => {
  *   type: 'VariableDeclaration',
  *   declarations: [
  *     {
@@ -64,7 +64,7 @@ Spiderman.parseExpression = function parseExpression(expression) {
   }
 
   var ast = esprima.parse(expression);
-  return ast.body[0];
+  return new Spiderman.Node(ast.body[0]);
 };
 
 /**
