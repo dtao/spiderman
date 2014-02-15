@@ -12,3 +12,11 @@ var outer = {
   inner: function() {}
 };
 var nativeRequire = typeof require === 'function' ? require : function(lib) {};
+Array.prototype.join = function join(delimiter) {
+  var result = '';
+  for (var i = 0, len = this.length; i < len; ++i) {
+    if (i > 0) { result += delimiter; }
+    result += this[i];
+  }
+  return result;
+};

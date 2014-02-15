@@ -193,16 +193,17 @@ Spiderman.Node.prototype.unwrap = function unwrap() {
  * @example
  * var functions = get('functions').query('Function');
  *
- * functions[0].inferName(); // => 'foo'
- * functions[1].inferName(); // => 'bar'
- * functions[2].inferName(); // => 'bar.baz'
- * functions[3].inferName(); // => 'onmessage'
- * functions[4].inferName(); // => 'Object.prototype.toString'
- * functions[5].inferName(); // => 'String.prototype.trim'
- * functions[6].inferName(); // => 'alert'
- * functions[7].inferName(); // => 'Array.prototype.peek'
- * functions[8].inferName(); // => 'outer.inner'
- * functions[9].inferName(); // => 'nativeRequire'
+ * functions[0].inferName();  // => 'foo'
+ * functions[1].inferName();  // => 'bar'
+ * functions[2].inferName();  // => 'bar.baz'
+ * functions[3].inferName();  // => 'onmessage'
+ * functions[4].inferName();  // => 'Object.prototype.toString'
+ * functions[5].inferName();  // => 'String.prototype.trim'
+ * functions[6].inferName();  // => 'alert'
+ * functions[7].inferName();  // => 'Array.prototype.peek'
+ * functions[8].inferName();  // => 'outer.inner'
+ * functions[9].inferName();  // => 'nativeRequire'
+ * functions[10].inferName(); // => 'Array.prototype.join'
  */
 Spiderman.Node.prototype.inferName = function inferName() {
   var node       = this.node,
@@ -214,8 +215,6 @@ Spiderman.Node.prototype.inferName = function inferName() {
       return node.id.name;
 
     case 'FunctionExpression':
-      if (node.id) { return node.id.name; }
-
       switch (parent.type) {
         case 'VariableDeclarator':
           if (node === parentNode.init) { return parentNode.id.name; }
@@ -264,7 +263,7 @@ Spiderman.Node.prototype.inferName = function inferName() {
  * @example
  * var functions = get('functions').query('Function');
  *
- * functions.length;  // => 10
+ * functions.length;  // => 11
  * functions[0].type; // => 'FunctionDeclaration'
  * functions[1].type; // => 'FunctionExpression'
  */
