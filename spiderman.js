@@ -92,11 +92,11 @@ Spiderman.Node = function Node(node, parent) {
  *     fooAssn = fooDecl.children[0],
  *     objExpr = fooAssn.children[0];
  *
- * fooDecl.toString(); // => 'var foo = { bar: null };'
- * fooAssn.toString(); // => 'foo = { bar: null }'
- * objExpr.toString(); // => '{ bar: null }'
+ * fooDecl.toSource(); // => 'var foo = { bar: null };'
+ * fooAssn.toSource(); // => 'foo = { bar: null }'
+ * objExpr.toSource(); // => '{ bar: null }'
  */
-Spiderman.Node.prototype.toString = function toString() {
+Spiderman.Node.prototype.toSource = function toSource() {
   if (!codegen) {
     codegen = require('escodegen');
   }
@@ -283,7 +283,7 @@ Spiderman.Node.prototype.query = function query(selector) {
  * var newDeclaration = Spiderman.parseExpression('var bar = "bar";');
  *
  * newDeclaration.appendTo(simpleProgram);
- * simpleProgram.toString(); // => [
+ * simpleProgram.toSource(); // => [
  *   "var foo = 'foo';",
  *   "var bar = 'bar';"
  * ].join('\n')
