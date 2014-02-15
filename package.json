@@ -2,12 +2,12 @@
   "name": "spiderman",
   "description": "Super powers for the SpiderMonkey Parser API",
   "main": "spiderman.js",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "dependencies": {
     "escodegen": "*"
   },
   "devDependencies": {
-    "autodoc": ">= 0.5.4",
+    "autodoc": ">= 0.5.6",
     "esprima": ">= 1.0.0"
   },
   "scripts": {

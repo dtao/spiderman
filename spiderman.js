@@ -36,7 +36,7 @@ function Spiderman(ast) {
   return new Spiderman.Node(ast);
 }
 
-Spiderman.VERSION = '0.1.4';
+Spiderman.VERSION = '0.1.5';
 
 // Declare these variables where they will be visible throughout the file;
 // but only assign them if/when necessary (from calling #toString).
