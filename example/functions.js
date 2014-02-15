@@ -11,3 +11,4 @@ Array.prototype['peek'] = function() { return this[this.length - 1]; };
 var outer = {
   inner: function() {}
 };
+var nativeRequire = typeof require === 'function' ? require : function(lib) {};

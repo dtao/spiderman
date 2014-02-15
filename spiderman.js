@@ -184,6 +184,10 @@ Spiderman.Node.prototype.unwrap = function unwrap() {
  * - If the function is assigned to an identifier (either a variable declaration
  *   or a member expression), uses that instead.
  *
+ * TODO: The logic of this method is TERRIBLE. It should do something much
+ * simpler, like walk up the node's ancestors to find out if it's being assigned
+ * to something in a much more generic way.
+ *
  * @returns {?string} The inferred name, if determined, otherwise `null`.
  *
  * @example
@@ -198,6 +202,7 @@ Spiderman.Node.prototype.unwrap = function unwrap() {
  * functions[6].inferName(); // => 'alert'
  * functions[7].inferName(); // => 'Array.prototype.peek'
  * functions[8].inferName(); // => 'outer.inner'
+ * functions[9].inferName(); // => 'nativeRequire'
  */
 Spiderman.Node.prototype.inferName = function inferName() {
   var node       = this.node,
@@ -218,6 +223,17 @@ Spiderman.Node.prototype.inferName = function inferName() {
 
         case 'AssignmentExpression':
           if (node === parentNode.right) { return guessExposedName(parentNode.left); }
+          break;
+
+        case 'ConditionalExpression':
+          if (node === parentNode.consequent || node === parentNode.alternate) {
+            parent = parent.parent;
+            if (parent.type === 'VariableDeclarator') {
+              return parent.name;
+            } else if (parent.type === 'AssignmentExpression') {
+              return guessExposedName(parent.unwrap().left);
+            }
+          }
           break;
 
         case 'Property':
@@ -248,7 +264,7 @@ Spiderman.Node.prototype.inferName = function inferName() {
  * @example
  * var functions = get('functions').query('Function');
  *
- * functions.length;  // => 9
+ * functions.length;  // => 10
  * functions[0].type; // => 'FunctionDeclaration'
  * functions[1].type; // => 'FunctionExpression'
  */
